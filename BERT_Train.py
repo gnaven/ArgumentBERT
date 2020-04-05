@@ -22,7 +22,7 @@ else:
         
 ### GETTING THE DATA #########
     
-DATA = '../DataPaper/data/ann_transcript_score_class.csv'
+DATA = 'data/ann_transcript_score_class.csv'
 input_ids_file = 'data/train/input_id.pt'
 attention_masks_file = 'data/train/attention_mask.pt'
 labels_file = 'data/train/labels.pt'
