@@ -45,7 +45,9 @@ model = BertForSequenceClassification.from_pretrained(
 
 # Tell pytorch to run this model on the GPU.
 model.to(device)
-
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True) 
+model.resize_token_embeddings(len(tokenizer))
+#model.cuda()
 
 # Get all of the model's parameters as a list of tuples.
 params = list(model.named_parameters())
@@ -477,7 +479,7 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 print("Saving model to %s" % output_dir)
-tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True) 
+
 
 # Save a trained model, configuration and tokenizer using `save_pretrained()`.
 # They can then be reloaded using `from_pretrained()`
