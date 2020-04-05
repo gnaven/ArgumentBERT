@@ -37,7 +37,7 @@ class BertData:
             index_list = []
             for i in range(df.shape[0]):
                 text = df[s.sent_col].iloc[i].split(' ')
-                if len(text)>460:
+                if len(text)>400:
                     index_list.append(i)
                 
             df = df.drop(index = index_list,axis = 0)
@@ -49,9 +49,23 @@ class BertData:
         # Load the BERT tokenizer.
         print('Loading BERT tokenizer...')
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)        
+        max_len = 0
+        for sent in sentences:
+        
+            # Tokenize the text and add `[CLS]` and `[SEP]` tokens.
+            input_ids = tokenizer.encode(sent, add_special_tokens=True)
+        
+            # Update the maximum sentence length.
+            max_len = max(max_len, len(input_ids))
+        
+        print('Max sentence length: ', max_len)          
+        
         input_ids = []
         attention_masks = []
         
+        
+        # For every sentence...
+      
         # For every sentence...
         for sent in sentences:
             # `encode_plus` will:
@@ -64,7 +78,7 @@ class BertData:
             encoded_dict = tokenizer.encode_plus(
                                 sent,                      # Sentence to encode.
                                 add_special_tokens = True, # Add '[CLS]' and '[SEP]'
-                                max_length = 500,           # Pad & truncate all sentences.
+                                max_length = max_len,           # Pad & truncate all sentences.
                                 pad_to_max_length = True,
                                 return_attention_mask = True,   # Construct attn. masks.
                                 return_tensors = 'pt',     # Return pytorch tensors.
