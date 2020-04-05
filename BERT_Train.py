@@ -28,7 +28,7 @@ attention_masks_file = 'data/train/attention_mask.pt'
 labels_file = 'data/train/labels.pt'
 
 
-dataclass = BERT_DataLoader.BertData(DATA, 'constructive', 'score_class','text',16)
+dataclass = BERT_DataLoader.BertData(DATA, 'constructive', 'score_class','text',8)
 train_dataloader, validation_dataloader = dataclass.data_split(input_ids_file,attention_masks_file, labels_file)
 
 ##############################
@@ -185,11 +185,12 @@ for epoch_i in range(0, epochs):
         b_input_ids = batch[0].to(device)
         b_input_mask = batch[1].to(device)
         b_labels = batch[2].to(device)
-
+        print('actual: ', b_labels)
         # Always clear any previously calculated gradients before performing a
         # backward pass. PyTorch doesn't do this automatically because 
         # accumulating the gradients is "convenient while training RNNs". 
         # (source: https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch)
+
         model.zero_grad()        
 
         # Perform a forward pass (evaluate the model on this training batch).
@@ -210,7 +211,7 @@ for epoch_i in range(0, epochs):
         # from the tensor.
         print('got model')
         
-        print('actual: ', b_labels)        
+        
         print('pred: ', logits)
         total_train_loss += loss.item()
 
