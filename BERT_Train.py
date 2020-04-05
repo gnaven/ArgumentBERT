@@ -37,7 +37,7 @@ train_dataloader, validation_dataloader = dataclass.data_split(input_ids_file,at
 # linear classification layer on top. 
 model = BertForSequenceClassification.from_pretrained(
     "bert-base-uncased", # Use the 12-layer BERT model, with an uncased vocab.
-    num_labels = 2, # The number of output labels--2 for binary classification.
+    num_labels = 14, # The number of output labels--2 for binary classification.
                     # You can increase this for multi-class tasks.   
     output_attentions = False, # Whether the model returns attentions weights.
     output_hidden_states = False, # Whether the model returns all hidden-states.
