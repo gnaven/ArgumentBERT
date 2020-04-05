@@ -82,7 +82,7 @@ from transformers import get_linear_schedule_with_warmup
 # Number of training epochs. The BERT authors recommend between 2 and 4. 
 # We chose to run for 4, but we'll see later that this may be over-fitting the
 # training data.
-epochs = 4
+epochs = 2
 
 # Total number of training steps is [number of batches] x [number of epochs]. 
 # (Note that this is not the same as the number of training samples).
@@ -136,6 +136,7 @@ training_stats = []
 
 # Measure the total training time for the whole run.
 total_t0 = time.time()
+minValLoss = 10000000000000
 
 # For each epoch...
 for epoch_i in range(0, epochs):
@@ -185,7 +186,6 @@ for epoch_i in range(0, epochs):
         b_input_ids = batch[0].to(device)
         b_input_mask = batch[1].to(device)
         b_labels = batch[2].to(device)
-        print('actual: ', b_labels)
         # Always clear any previously calculated gradients before performing a
         # backward pass. PyTorch doesn't do this automatically because 
         # accumulating the gradients is "convenient while training RNNs". 
@@ -209,10 +209,6 @@ for epoch_i in range(0, epochs):
         # calculate the average loss at the end. `loss` is a Tensor containing a
         # single value; the `.item()` function just returns the Python value 
         # from the tensor.
-        print('got model')
-        
-        
-        print('pred: ', logits)
         total_train_loss += loss.item()
 
         # Perform a backward pass to calculate the gradients.
@@ -294,13 +290,17 @@ for epoch_i in range(0, epochs):
             
         # Accumulate the validation loss.
         total_eval_loss += loss.item()
-
+        
         # Move logits and labels to CPU
+        
         logits = logits.detach().cpu().numpy()
         label_ids = b_labels.to('cpu').numpy()
 
         # Calculate the accuracy for this batch of test sentences, and
         # accumulate it over all batches.
+        print('pred ',logits)
+        print('true ', label_ids)
+        print('acc ', flat_accuracy(logits, label_ids))
         total_eval_accuracy += flat_accuracy(logits, label_ids)
         
 
@@ -310,6 +310,23 @@ for epoch_i in range(0, epochs):
 
     # Calculate the average loss over all of the batches.
     avg_val_loss = total_eval_loss / len(validation_dataloader)
+    
+    checkpoint = {
+                    'state_dict': model.state_dict(),
+                    'minValLoss': avg_val_loss
+                }
+                # save the last checkpoint
+    torch.save(checkpoint, 'savedmodels/ArgBERT_last.pt')   
+    
+    if avg_val_loss < minValLoss:
+        
+        minValLoss = avg_val_loss
+        
+        checkpoint = {
+            'state_dict': model.state_dict(),
+            'minValLoss': minValLoss,
+        }
+        torch.save(checkpoint, 'savedmodels/ArgBERT_best.pt')      
     
     # Measure how long the validation run took.
     validation_time = format_time(time.time() - t0)
