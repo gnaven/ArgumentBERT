@@ -82,7 +82,7 @@ from transformers import get_linear_schedule_with_warmup
 # Number of training epochs. The BERT authors recommend between 2 and 4. 
 # We chose to run for 4, but we'll see later that this may be over-fitting the
 # training data.
-epochs = 2
+epochs = 10
 
 # Total number of training steps is [number of batches] x [number of epochs]. 
 # (Note that this is not the same as the number of training samples).
@@ -370,7 +370,7 @@ df_stats
 ################### PLOTTING Training and validation LOSS ##############################
 import matplotlib.pyplot as plt
 
-
+"""
 import seaborn as sns
 
 # Use plot styling from seaborn.
@@ -392,7 +392,7 @@ plt.legend()
 plt.xticks([1, 2, 3, 4])
 
 plt.show()
-
+"""
 #################### TEST SET PREP ############################
 import pandas as pd
 TestFile = 'data/ann_transcript_score_class_test.csv'
@@ -463,7 +463,7 @@ for i in range(len(true_labels)):
     matthews = matthews_corrcoef(true_labels[i], pred_labels_i)                
     matthews_set.append(matthews)
 
-
+"""
 ####################### MCC ########################################  
 # Create a barplot showing the MCC score for each batch of test samples.
 ax = sns.barplot(x=list(range(len(matthews_set))), y=matthews_set, ci=None)
@@ -487,7 +487,7 @@ flat_true_labels = np.concatenate(true_labels, axis=0)
 mcc = matthews_corrcoef(flat_true_labels, flat_predictions)
 
 print('Total MCC: %.3f' % mcc)
-
+"""
 #################### SAVING MODEL ##############################
 
 import os
