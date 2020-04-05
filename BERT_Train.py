@@ -208,6 +208,8 @@ for epoch_i in range(0, epochs):
         # calculate the average loss at the end. `loss` is a Tensor containing a
         # single value; the `.item()` function just returns the Python value 
         # from the tensor.
+        print('got model')
+        print('loss: ', loss.item())
         total_train_loss += loss.item()
 
         # Perform a backward pass to calculate the gradients.
