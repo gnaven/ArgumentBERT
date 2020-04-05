@@ -117,7 +117,7 @@ class BertData:
         # The DataLoader needs to know our batch size for training, so we specify it 
         # here. For fine-tuning BERT on a specific task, the authors recommend a batch 
         # size of 16 or 32.
-        batch_size = 16
+        batch_size = 4
         
         # Create the DataLoaders for our training and validation sets.
         # We'll take training samples in random order. 
@@ -193,7 +193,7 @@ class BertData:
     
     def test_loader(s, input_tensor_file,atten_tensor_file,label_tensor_file):
         # Set the batch size.  
-        batch_size = 16  
+        batch_size = 4  
         
         input_ids = torch.load(input_tensor_file)
         attention_masks = torch.load(atten_tensor_file) 
