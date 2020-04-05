@@ -28,7 +28,7 @@ attention_masks_file = 'data/train/attention_mask.pt'
 labels_file = 'data/train/labels.pt'
 
 
-dataclass = BERT_DataLoader.BertData(DATA, 'constructive', 'score_class','text')
+dataclass = BERT_DataLoader.BertData(DATA, 'constructive', 'score_class','text',16)
 train_dataloader, validation_dataloader = dataclass.data_split(input_ids_file,attention_masks_file, labels_file)
 
 ##############################

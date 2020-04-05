@@ -21,14 +21,15 @@ class BertData:
         print('No GPU available, using the CPU instead.')
         device = torch.device("cpu")    
     
-    def __init__(s, TrainFile, label,score,sent_col):
+    def __init__(s, TrainFile, label,score,sent_col,batch_size=16):
         df = pd.read_csv(TrainFile)
         
         s.sent_col = sent_col        
         #df = df[df['label'].str.contains(label)]
         #df = df.reset_index()
+        s.batch_size =batch_size
         s.df = s.sentence_trim(df)
-        
+        s.max_len =503
         s.score = s.df[score]
         
     def sentence_trim(s,df,action = 'drop'):
@@ -59,7 +60,7 @@ class BertData:
             max_len = max(max_len, len(input_ids))
         
         print('Max sentence length: ', max_len)          
-        
+        s.max_len = max_len
         input_ids = []
         attention_masks = []
         
@@ -131,7 +132,7 @@ class BertData:
         # The DataLoader needs to know our batch size for training, so we specify it 
         # here. For fine-tuning BERT on a specific task, the authors recommend a batch 
         # size of 16 or 32.
-        batch_size = 4
+        batch_size = s.batch_size
         
         # Create the DataLoaders for our training and validation sets.
         # We'll take training samples in random order. 
@@ -182,7 +183,7 @@ class BertData:
             encoded_dict = tokenizer.encode_plus(
                                 sent,                      # Sentence to encode.
                                 add_special_tokens = True, # Add '[CLS]' and '[SEP]'
-                                max_length = 64,           # Pad & truncate all sentences.
+                                max_length = s.max_len,           # Pad & truncate all sentences.
                                 pad_to_max_length = True,
                                 return_attention_mask = True,   # Construct attn. masks.
                                 return_tensors = 'pt',     # Return pytorch tensors.
@@ -207,7 +208,7 @@ class BertData:
     
     def test_loader(s, input_tensor_file,atten_tensor_file,label_tensor_file):
         # Set the batch size.  
-        batch_size = 4  
+        batch_size = s.batch_size 
         
         input_ids = torch.load(input_tensor_file)
         attention_masks = torch.load(atten_tensor_file) 
