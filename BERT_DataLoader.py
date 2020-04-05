@@ -37,7 +37,7 @@ class BertData:
             index_list = []
             for i in range(df.shape[0]):
                 text = df[s.sent_col].iloc[i].split(' ')
-                if len(text)>512:
+                if len(text)>460:
                     index_list.append(i)
                 
             df = df.drop(index = index_list,axis = 0)
@@ -64,7 +64,7 @@ class BertData:
             encoded_dict = tokenizer.encode_plus(
                                 sent,                      # Sentence to encode.
                                 add_special_tokens = True, # Add '[CLS]' and '[SEP]'
-                                max_length = 512,           # Pad & truncate all sentences.
+                                max_length = 500,           # Pad & truncate all sentences.
                                 pad_to_max_length = True,
                                 return_attention_mask = True,   # Construct attn. masks.
                                 return_tensors = 'pt',     # Return pytorch tensors.
