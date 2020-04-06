@@ -28,7 +28,7 @@ attention_masks_file = 'data/train/attention_mask.pt'
 labels_file = 'data/train/labels.pt'
 
 
-dataclass = BERT_DataLoader.BertData(DATA, 'constructive', 'score_class','text',8)
+dataclass = BERT_DataLoader.BertData(DATA, 'constructive', 'score_class','text',batch_size=8)
 train_dataloader, validation_dataloader = dataclass.data_split(input_ids_file,attention_masks_file, labels_file)
 
 ##############################
@@ -37,7 +37,7 @@ train_dataloader, validation_dataloader = dataclass.data_split(input_ids_file,at
 # linear classification layer on top. 
 model = BertForSequenceClassification.from_pretrained(
     "bert-base-uncased", # Use the 12-layer BERT model, with an uncased vocab.
-    num_labels = 15, # The number of output labels--2 for binary classification.
+    num_labels = 7, # The number of output labels--2 for binary classification.
                     # You can increase this for multi-class tasks.   
     output_attentions = False, # Whether the model returns attentions weights.
     output_hidden_states = False, # Whether the model returns all hidden-states.
@@ -82,7 +82,7 @@ from transformers import get_linear_schedule_with_warmup
 # Number of training epochs. The BERT authors recommend between 2 and 4. 
 # We chose to run for 4, but we'll see later that this may be over-fitting the
 # training data.
-epochs = 10
+epochs = 6
 
 # Total number of training steps is [number of batches] x [number of epochs]. 
 # (Note that this is not the same as the number of training samples).
