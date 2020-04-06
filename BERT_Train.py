@@ -298,8 +298,7 @@ for epoch_i in range(0, epochs):
 
         # Calculate the accuracy for this batch of test sentences, and
         # accumulate it over all batches.
-        print('pred ',logits)
-        print('true ', label_ids)
+
         print('acc ', flat_accuracy(logits, label_ids))
         total_eval_accuracy += flat_accuracy(logits, label_ids)
         
