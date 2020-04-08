@@ -33,7 +33,7 @@ vallabels_file = 'data/val/labels.pt'
 
 dataclass = BERT_DataLoader.BertData(DATA, 'constructive', 'score_class','text',batch_size=8)
 train_dataloader = dataclass.dataloader(input_ids_file,attention_masks_file, labels_file)
-validation_dataloader = dataclass.dataloader(input_ids_file,attention_masks_file, labels_file)
+validation_dataloader = dataclass.dataloader(valinput_ids_file,valattention_masks_file, vallabels_file)
 
 ##############################
 
