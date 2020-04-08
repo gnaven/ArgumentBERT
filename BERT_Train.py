@@ -27,9 +27,13 @@ input_ids_file = 'data/train/input_id.pt'
 attention_masks_file = 'data/train/attention_mask.pt'
 labels_file = 'data/train/labels.pt'
 
+valinput_ids_file = 'data/val/input_id.pt'
+valattention_masks_file = 'data/val/attention_mask.pt'
+vallabels_file = 'data/val/labels.pt'
 
 dataclass = BERT_DataLoader.BertData(DATA, 'constructive', 'score_class','text',batch_size=8)
-train_dataloader, validation_dataloader = dataclass.data_split(input_ids_file,attention_masks_file, labels_file)
+train_dataloader = dataclass.dataloader(input_ids_file,attention_masks_file, labels_file)
+validation_dataloader = dataclass.dataloader(input_ids_file,attention_masks_file, labels_file)
 
 ##############################
 

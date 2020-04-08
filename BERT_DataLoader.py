@@ -45,7 +45,10 @@ class BertData:
         return df.reset_index()
         
         
-    def tokenize_train(s,sentences):
+    def tokenize_train(s,sentences,dset,score = None):
+        
+        if score is None:
+            score = s.score
         
         # Load the BERT tokenizer.
         print('Loading BERT tokenizer...')
@@ -94,18 +97,40 @@ class BertData:
         # Convert the lists into tensors.
         input_ids = torch.cat(input_ids, dim=0)
         attention_masks = torch.cat(attention_masks, dim=0)
-        labels = torch.tensor(s.score)
+        labels = torch.tensor(score)
         
         # Print sentence 0, now as a list of IDs.
         print('Original: ', sentences[0])
         print('Token IDs:', input_ids[0]) 
         
-        torch.save(input_ids,'data/train/input_id.pt')
-        torch.save(attention_masks,'data/train/attention_mask.pt')
-        torch.save(labels,'data/train/labels.pt')        
+        torch.save(input_ids,'data/'+dset+'/input_id.pt')
+        torch.save(attention_masks,'data/'+dset+'/attention_mask.pt')
+        torch.save(labels,'data/'+dset+'/labels.pt')        
         
         
         return input_ids, attention_masks,labels
+    
+    def dataloader(s,input_ids_file,attention_masks_file, labels_file):
+        
+        input_ids = torch.load(input_ids_file)
+        attention_masks = torch.load(attention_masks_file)
+        labels = torch.load(labels_file)
+        
+        # Combine the training inputs into a TensorDataset.
+        dataset = TensorDataset(input_ids, attention_masks, labels)
+              
+        batch_size = s.batch_size
+        
+        # Create the DataLoaders for our training and validation sets.
+        # We'll take training samples in random order. 
+        dataloader = DataLoader(
+                    dataset,  # The training samples.
+                    sampler = RandomSampler(dataset), # Select batches randomly
+                    batch_size = batch_size # Trains with this batch size.
+                )
+        
+        
+        return dataloader        
     
     def data_split(s,input_ids_file,attention_masks_file, labels_file):
         
@@ -222,19 +247,25 @@ class BertData:
         return prediction_dataloader
         
     
-    def run_all(s,TestFile):
-        sentences = s.df[s.sent_col]
-        s.tokenize_train(sentences)
+    def run_all(s,TestFile, ValFile):
+        train_sentences = s.df[s.sent_col]
+        dfval = pd.read_csv(ValFile)
+        val_sentences = dfval[s.sent_col].values
+        val_scores = dfval['score_class'].values
+        
+        s.tokenize_train(train_sentences,'train')
+        s.tokenize_train(val_sentences,'val',val_scores)
         #train_dataloader, validation_dataloader = s.data_split(input_ids,attention_masks, labels)
         s.test_data(TestFile)
         
     
 if __name__ == '__main__':
     
-    DATA = 'data/ann_transcript_score_class_train.csv'
+    TrainData = 'data/ann_transcript_score_class_train.csv'
+    ValData = 'data/ann_transcript_score_class_val.csv'
     TestData = 'data/ann_transcript_score_class_test.csv'
     
-    dataclass = BertData(DATA, 'constructive', 'score_class','text')
-    dataclass.run_all(TestData)
+    dataclass = BertData(TrainData, 'constructive', 'score_class','text')
+    dataclass.run_all(TestData,ValData)
         
         

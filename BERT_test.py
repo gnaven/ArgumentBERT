@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 
 TestFile = 'data/ann_transcript_score_class_test.csv'
 df = pd.read_csv(TestFile)
-input_tensor_file= 'data/train/input_id.pt'
-atten_tensor_file = 'data/train/attention_mask.pt'
-label_tensor_file = 'data/train/labels.pt'
+input_tensor_file= 'data/test/input_id.pt'
+atten_tensor_file = 'data/test/attention_mask.pt'
+label_tensor_file = 'data/test/labels.pt'
 
 if torch.cuda.is_available():    
 
@@ -32,7 +32,7 @@ else:
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True) 
 
-dataclass = BERT_DataLoader.BertData(TestFile, 'constructive', 'score_class','text',batch_size=8)
+dataclass = BERT_DataLoader.BertData(TestFile, 'constructive', 'score_class','text',batch_size=30)
 prediction_dataloader = dataclass.test_loader(input_tensor_file, atten_tensor_file, label_tensor_file)
 
 
@@ -40,6 +40,7 @@ prediction_dataloader = dataclass.test_loader(input_tensor_file, atten_tensor_fi
 def flat_accuracy(preds, labels):
     pred_flat = np.argmax(preds, axis=1).flatten()
     labels_flat = labels.flatten()
+    print(pred_flat)
     return np.sum(pred_flat == labels_flat) / len(labels_flat)
 
 
@@ -54,7 +55,7 @@ model = BertForSequenceClassification.from_pretrained(
 )
 
 
-checkpoint = torch.load('savedmodels/ArgBERT_best.pt')
+checkpoint = torch.load('savedmodels/ArgBERT_best.pt',map_location=device)
 minValLoss = checkpoint['minValLoss']
 model.load_state_dict(checkpoint['state_dict']) 
 model.to(device)
