@@ -3,7 +3,7 @@ from transformers import BertForSequenceClassification, AdamW, BertConfig
 import BERT_DataLoader
 import pandas as pd
 from transformers import BertTokenizer
-
+import torch.nn as nn
 
 if torch.cuda.is_available():    
 
@@ -19,7 +19,20 @@ else:
     print('No GPU available, using the CPU instead.')
     device = torch.device("cpu")    
         
+class BERTmod(torch.nn.Module):
+    
+    def __init__(self,bert_out):
         
+        super(BERTmod,self).__init__()
+        
+        self.bert = BertForSequenceClassification.from_pretrained('bert-base-uncased',num_labels=bert_out)
+        self.linear = nn.Linear(bert_out, 1)
+        
+    def forward(self, b_input_ids,b_input_mask):
+        pooled_out = self.bert(b_input_ids, token_type_ids=None, attention_mask=b_input_mask)   
+        logits = self.linear(pooled_out[0])
+        
+        return logits        
 ### GETTING THE DATA #########
     
 DATA = 'data/ann_transcript_score_class_train.csv'
@@ -37,20 +50,10 @@ validation_dataloader = dataclass.dataloader(valinput_ids_file,valattention_mask
 
 ##############################
 
-# Load BertForSequenceClassification, the pretrained BERT model with a single 
-# linear classification layer on top. 
-model = BertForSequenceClassification.from_pretrained(
-    "bert-base-uncased", # Use the 12-layer BERT model, with an uncased vocab.
-    num_labels = 7, # The number of output labels--2 for binary classification.
-                    # You can increase this for multi-class tasks.   
-    output_attentions = False, # Whether the model returns attentions weights.
-    output_hidden_states = False, # Whether the model returns all hidden-states.
-)
 
-# Tell pytorch to run this model on the GPU.
-model.to(device)
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True) 
-model.resize_token_embeddings(len(tokenizer))
+model = BERTmod(bert_out=10)
+model.to(device)
 #model.cuda()
 
 # Get all of the model's parameters as a list of tuples.
@@ -86,7 +89,7 @@ from transformers import get_linear_schedule_with_warmup
 # Number of training epochs. The BERT authors recommend between 2 and 4. 
 # We chose to run for 4, but we'll see later that this may be over-fitting the
 # training data.
-epochs = 12
+epochs = 1
 
 # Total number of training steps is [number of batches] x [number of epochs]. 
 # (Note that this is not the same as the number of training samples).
@@ -98,7 +101,13 @@ scheduler = get_linear_schedule_with_warmup(optimizer,
                                             num_training_steps = total_steps)
 
 ################################## TRAINING LOOPS and FUNCTIONS #####################################
+
+        
+        
+
 import numpy as np
+
+
 
 # Function to calculate the accuracy of our predictions vs labels
 def flat_accuracy(preds, labels):
@@ -143,6 +152,27 @@ total_t0 = time.time()
 minValLoss = 10000000000000
 
 # For each epoch...
+
+"""
+
+# Load BertForSequenceClassification, the pretrained BERT model with a single 
+# linear classification layer on top. 
+model = BertForSequenceClassification.from_pretrained(
+    "bert-base-uncased", # Use the 12-layer BERT model, with an uncased vocab.
+    num_labels = 7, # The number of output labels--2 for binary classification.
+                    # You can increase this for multi-class tasks.   
+    output_attentions = False, # Whether the model returns attentions weights.
+    output_hidden_states = False, # Whether the model returns all hidden-states.
+)
+
+# Tell pytorch to run this model on the GPU.
+model.to(device)
+model.resize_token_embeddings(len(tokenizer))
+"""
+
+
+criterion = nn.MSELoss()
+
 for epoch_i in range(0, epochs):
     
     # ========================================
@@ -204,11 +234,17 @@ for epoch_i in range(0, epochs):
         # arge given and what flags are set. For our useage here, it returns
         # the loss (because we provided labels) and the "logits"--the model
         # outputs prior to activation.
+        
+        """
         loss, logits = model(b_input_ids, 
                              token_type_ids=None, 
                              attention_mask=b_input_mask, 
                              labels=b_labels)
-
+        """
+        
+        logits = model.forward(b_input_ids, b_input_mask)
+        
+        loss = criterion(logits.transpose(0,1)[0],b_labels.float())
         # Accumulate the training loss over all of the batches so that we can
         # calculate the average loss at the end. `loss` is a Tensor containing a
         # single value; the `.item()` function just returns the Python value 
@@ -287,10 +323,17 @@ for epoch_i in range(0, epochs):
             # https://huggingface.co/transformers/v2.2.0/model_doc/bert.html#transformers.BertForSequenceClassification
             # Get the "logits" output by the model. The "logits" are the output
             # values prior to applying an activation function like the softmax.
+            """
             (loss, logits) = model(b_input_ids, 
                                    token_type_ids=None, 
                                    attention_mask=b_input_mask,
                                    labels=b_labels)
+                                   """
+            
+            logits = model.forward(b_input_ids, b_input_mask)
+            
+            loss = criterion(logits,b_labels)
+            
             
         # Accumulate the validation loss.
         total_eval_loss += loss.item()
