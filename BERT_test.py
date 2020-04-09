@@ -54,6 +54,7 @@ def flat_accuracy(preds, labels):
     pred_flat = np.argmax(preds, axis=1).flatten()
     labels_flat = labels.flatten()
     print(pred_flat)
+    print(labels_flat)
     return np.sum(pred_flat == labels_flat) / len(labels_flat)
 
 
@@ -84,6 +85,7 @@ predictions , true_labels = [], []
 total_test_accuracy = 0
 criterion = nn.MSELoss()
 # Predict 
+total_test_loss=0
 for batch in prediction_dataloader:
     # Add batch to GPU
     batch = tuple(t.to(device) for t in batch)
@@ -102,7 +104,7 @@ for batch in prediction_dataloader:
         logits = model.forward(b_input_ids, b_input_mask)
         
         loss = criterion(logits.transpose(0,1)[0],b_labels.float())
-        
+    total_test_loss += loss.item()
     #logits = outputs[0]
   
     # Move logits and labels to CPU
@@ -114,10 +116,11 @@ for batch in prediction_dataloader:
     true_labels.append(label_ids)
     total_test_accuracy += flat_accuracy(logits, label_ids)
 
+avg_test_loss = total_test_loss / len(prediction_dataloader)  
 avg_test_accuracy = total_test_accuracy / len(prediction_dataloader)    
 
 print('    DONE.')
-
+print('test loss ', avg_test_loss)
 print('test accuracy ', avg_test_accuracy)
 
 from sklearn.metrics import matthews_corrcoef
@@ -139,7 +142,7 @@ for i in range(len(true_labels)):
     matthews = matthews_corrcoef(true_labels[i], pred_labels_i)                
     matthews_set.append(matthews)
 
-
+"""
 #################### SAVING MODEL ##############################
 
 import os
@@ -163,3 +166,4 @@ tokenizer.save_pretrained(output_dir)
 
 # Good practice: save your training arguments together with the trained model
 # torch.save(args, os.path.join(output_dir, 'training_args.bin'))
+"""
