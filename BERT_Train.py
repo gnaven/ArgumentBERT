@@ -332,8 +332,7 @@ for epoch_i in range(0, epochs):
             
             logits = model.forward(b_input_ids, b_input_mask)
             
-            loss = criterion(logits,b_labels)
-            
+            loss = criterion(logits.transpose(0,1)[0],b_labels.float())
             
         # Accumulate the validation loss.
         total_eval_loss += loss.item()
