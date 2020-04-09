@@ -7,7 +7,7 @@ from transformers import BertForSequenceClassification, AdamW, BertConfig
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 import BERT_DataLoader
 import matplotlib.pyplot as plt
-
+import torch.nn as nn
 
 TestFile = 'data/ann_transcript_score_class_test.csv'
 df = pd.read_csv(TestFile)
@@ -29,7 +29,20 @@ else:
     print('No GPU available, using the CPU instead.')
     device = torch.device("cpu")  
     
-
+class BERTmod(torch.nn.Module):
+    
+    def __init__(self,bert_out):
+        
+        super(BERTmod,self).__init__()
+        
+        self.bert = BertForSequenceClassification.from_pretrained('bert-base-uncased',num_labels=bert_out)
+        self.linear = nn.Linear(bert_out, 1)
+        
+    def forward(self, b_input_ids,b_input_mask):
+        pooled_out = self.bert(b_input_ids, token_type_ids=None, attention_mask=b_input_mask)   
+        logits = self.linear(pooled_out[0])
+        
+        return logits  
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True) 
 
 dataclass = BERT_DataLoader.BertData(TestFile, 'constructive', 'score_class','text',batch_size=30)
@@ -46,6 +59,7 @@ def flat_accuracy(preds, labels):
 
 #################### PREDICTION on TEST SET ######################
 # Prediction on test set
+"""
 model = BertForSequenceClassification.from_pretrained(
     "bert-base-uncased", # Use the 12-layer BERT model, with an uncased vocab.
     num_labels = 7, # The number of output labels--2 for binary classification.
@@ -53,7 +67,9 @@ model = BertForSequenceClassification.from_pretrained(
     output_attentions = False, # Whether the model returns attentions weights.
     output_hidden_states = False, # Whether the model returns all hidden-states.
 )
+"""
 
+model = BERTmod(bert_out=10)
 
 checkpoint = torch.load('savedmodels/ArgBERT_best.pt',map_location=device)
 minValLoss = checkpoint['minValLoss']
@@ -66,6 +82,7 @@ model.eval()
 # Tracking variables 
 predictions , true_labels = [], []
 total_test_accuracy = 0
+criterion = nn.MSELoss()
 # Predict 
 for batch in prediction_dataloader:
     # Add batch to GPU
@@ -78,10 +95,15 @@ for batch in prediction_dataloader:
     # speeding up prediction
     with torch.no_grad():
         # Forward pass, calculate logit predictions
+        """
         outputs = model(b_input_ids, token_type_ids=None, 
                         attention_mask=b_input_mask)
-  
-    logits = outputs[0]
+                        """
+        logits = model.forward(b_input_ids, b_input_mask)
+        
+        loss = criterion(logits.transpose(0,1)[0],b_labels.float())
+        
+    #logits = outputs[0]
   
     # Move logits and labels to CPU
     logits = logits.detach().cpu().numpy()
