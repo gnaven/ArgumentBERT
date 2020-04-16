@@ -45,7 +45,7 @@ class BERTmod(torch.nn.Module):
         return logits  
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True) 
 
-dataclass = BERT_DataLoader.BertData(TestFile, 'constructive', 'score_class','text',batch_size=30)
+dataclass = BERT_DataLoader.BertData(TestFile, 'constructive', 'score','text',batch_size=30)
 prediction_dataloader = dataclass.test_loader(input_tensor_file, atten_tensor_file, label_tensor_file)
 
 
