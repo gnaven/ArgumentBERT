@@ -23,7 +23,7 @@ class BertData:
     
     def __init__(s, TrainFile, label,score,sent_col,batch_size=16):
         df = pd.read_csv(TrainFile)
-        df = df[['text','score']].dropna()
+        df = df[['text','score']].dropna().reset_index()
         s.sent_col = sent_col        
         #df = df[df['label'].str.contains(label)]
         #df = df.reset_index()
@@ -181,7 +181,7 @@ class BertData:
     def test_data(s,TestFile):
         # Load the dataset into a pandas dataframe.
         df = pd.read_csv(TestFile)
-        df = df[['text','score']].dropna()
+        df = df[['text','score']].dropna().reset_index()
         # Load the BERT tokenizer.
         print('Loading BERT tokenizer...')
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True) 
@@ -251,7 +251,7 @@ class BertData:
     def run_all(s,TestFile, ValFile):
         train_sentences = s.df[s.sent_col]
         dfval = pd.read_csv(ValFile)
-        dfval = dfval[['text','score']].dropna()
+        dfval = dfval[['text','score']].dropna().reset_index()
         val_sentences = dfval[s.sent_col].values
         val_scores = dfval['score'].values
         
